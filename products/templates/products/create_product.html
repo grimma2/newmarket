@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<form id="product_form" method="post" enctype="multipart/form-data" action="{% url 'products:createp' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button id="end_send" type="submit" onclick="sendFormButton()">Отправить</button>
+    <button id="state_button" type="submit"><img id="state_send" height="20" width="20" src="#"></button>
+</form>
+
+<script>
+let endBtn = document.getElementById("end_send")
+let stateBtn = document.getElementById("state_send")
+let stateChangeUrl = document.getElementById("state_button")
+
+if (window.location.href.includes("add")) {
+    stateBtn.setAttribute("src", "{% static 'products/images/blue_arrow.jpg' %}")
+    endBtn.setAttribute("style", "display: none")
+    stateChangeUrl.setAttribute("onclick", "sendTransformField()")
+} else if (window.location.href.includes("transform")) {
+    stateBtn.setAttribute("src", "{% static 'products/images/plus.png' %}")
+    stateChangeUrl.setAttribute("onclick", "addFieldForm()")
+} else {
+    stateBtn.setAttribute("src", "{% static 'products/images/plus.png' %}")
+    stateChangeUrl.setAttribute("onclick", "addFieldForm()")
+}
+
+function sendFormButton () {
+    document.getElementById(
+        "product_form").setAttribute("action", "{% url 'products:createp' %}"
+    )
+}
+
+function addFieldForm () {
+    document.getElementById(
+        "product_form").setAttribute("action", "{% url 'products:createp_add' %}"
+    )
+}
+
+function sendTransformField () {
+    document.getElementById(
+        "product_form").setAttribute("action", "{% url 'products:createp_transform' %}"
+    )
+}
+</script>
+</body>
+</html>

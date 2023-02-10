@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>page {{ user.user.full_name }}</title>
+</head>
+<body>
+{% if user.user.avatar %}
+<img src="{{ user.user.avatar.url }}">
+{% else %}
+<img src="{% static 'mainapp/images/avatar.jpg' %}" width="50" height="50">
+{% endif %}
+
+<p>{{ user.user.first_name }} {{ user.user.last_name }}</p>
+products delivered: {{ delivered_count }}
+<a href="{% url 'usercompany:public_company' slug=user.user_company.user.slug %}">
+    company: {{ user.user_company.company_name }}
+</a>
+
+</body>
+</html>

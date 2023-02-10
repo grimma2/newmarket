@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ request.user.username }}</title>
+    <link rel="stylesheet" href="{% static 'mainapp/css/map.css' %}">
+</head>
+<body>
+
+<div id="user-map"></div>
+<h1>{{ user.user.username }}</h1>
+
+{% if order_products %}
+    <p>{{ first_product.product.name }}</p>
+    <img height="100" width="100" src="{{ first_product.product.photo.url }}">
+    <p>{{ first_product.product.price }}</p>
+    <p>{{ first_product.delivery_date }}</p>
+    <p>product status: {{ first_product.status }}</p>
+    <a href="{% url 'usercourier:public_courier' first_product.user_courier.user.slug %}">
+        курьер: {{ first_product.user_courier.user.username }}
+    </a>
+    <a href="#">Написать ему</a>
+    <a href="{% url 'mainapp:add_msg' msg='Отменить товар?' %}">Отменить</a>
+
+    <div class="order-list">
+        {% for order_product in order_products %}
+            <a href="{% url 'usercustomer:change_context_customer' order_product.pk %}">
+                {{ order_product.product.name }}
+            </a>
+        {% endfor %}
+    </div>
+{% else %}
+<p>You haven't products in order :(</p>
+{% endif %}
+
+{% if completed_products %}
+<div class="completed-products">
+    {% for product in products %}
+        <p>{{ first_product.product.name }}</p>
+        <img height="100" width="100" src="{{ first_product.product.photo.url }}">
+        {% if product.cancel %}
+            <p>Отменён</p>
+        {% elif product.completed %}
+            <p>Доставлен</p>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if messages %}
+    <div id="messages-block">
+        {% for message in messages %}
+            <div class="alter alter-{{ message.tags }} m-2" id="msg" role="alert">
+                {{ message }}
+                <a href="{% url 'mainapp:cancel_accept' product_id=first_product.pk %}">Да</a>
+                <a onclick="showHideElement('messages-block')" href="#">Нет</a>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<script src="{% static 'mainapp/js/show_hide.js' %}"></script>
+<script src="https://api-maps.yandex.ru/2.1/?apikey=6c1adc9a-4f76-4b6d-a058-67e92fd2b098&lang=ru_RU" type="text/javascript"></script>
+<script src="{% static 'mainapp/js/map_script.js' %}"></script>
+
+</body>
+</html>

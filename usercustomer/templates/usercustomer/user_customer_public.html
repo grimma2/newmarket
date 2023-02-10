@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+{% if user.user.avatar %}
+<img src="{{ user.user.avatar.url }}">
+{% else %}
+<img src="{% static 'mainapp/images/avatar.jpg' %}" width="50" height="50">
+{% endif %}
+
+<p>{{ user.user.username }}</p>
+
+<button type="submit" onclick="showHideElement('products-buy')">Купленые товары пользователя</button>
+{% if buy_products %}
+    <div id="products-buy" style="display: none">
+        {% for product in buy_products %}
+            <a href="{% url 'products:product_detail' slug=product.slug %}">
+                <img src="{{ product.photo.url }}" height="50" width="50">
+                <p>{{ product.name }}</p>
+            </a>
+        {% endfor %}
+    </div>
+{% endif %}
+
+
+<script src="{% static 'mainapp/js/show_hide.js' %}"></script>
+</body>
+</html>

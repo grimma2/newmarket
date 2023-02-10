@@ -1,0 +1,153 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ product.name }}</title>
+    <link rel="stylesheet" href="{% static 'mainapp/css/stars.css' %}">
+    <link rel="stylesheet" href="//code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+</head>
+<body>
+
+<h5>{{ product.name }}</h5>
+<img src="{{ product.photo.url }}" height="300" width="500">
+<p><strong>{{ product.price }}</strong></p>
+rating: {{ product_rate }}
+
+{% if request.user.get_specific_user %}
+<a href="{% url 'products:product_to_cart' slug=product.slug %}">Добавить в карзину</a>
+{% endif %}
+
+<p>
+    {% for param in parameters %}
+        <p>{{ param.0 }}: {{ param.1 }}</p>
+    {% endfor %}
+    <a href="
+        {% url 'usercompany:public_company' slug=product.user_company.user.slug %}
+    ">Все товары {{ product.user_company.user.username }}</a>
+</p>
+
+
+<p>{{ product.description }}</p>
+
+{% if exist_create_form %}
+<form id="create-form">
+    {% csrf_token %}
+    <x-star-rating value="3" number="5"></x-star-rating>
+    <input type="text" name="feedbackInput" placeholder="Your feedback">
+</form>
+{% endif %}
+
+<div class="feedback-block">
+    {% for feedback in feedback_set %}
+        <div class="feedback-element feedback-user-{{ feedback.user_who_put.username }}" data-objectid="{{ feedback.pk }}">
+            <!-- <img src=""> -->
+            <p class="username">{{ feedback.user_who_put.username }}</p>
+            <p>{{ feedback.rating }}</p>
+            <p class="feedback-text">{{ feedback.text }}</p>
+            {% if feedback.user_who_put == request.user %}
+                <button id="change-button" type="submit" onclick="changeClick()">Изменить</button>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script src="{% static 'mainapp/js/stars.js' %}"></script>
+
+<script>
+
+function changeClick () {
+    let feedbackElement = document.querySelector(
+            'div.feedback-element.feedback-user-{{ request.user.username }}'
+        )
+    let feedbackText = feedbackElement.querySelector('.feedback-text')
+
+    feedbackElement.insertAdjacentHTML(
+        `afterend`,
+        `
+            <form id="change-form">
+                {% csrf_token %}
+                <input type="text" value="${feedbackText.textContent}" name="changeInput">
+            </form>
+        `
+    )
+    feedbackText.style.display = 'none'
+    let formObj = document.getElementById('change-form')
+
+    formObj.onsubmit = function (e) {
+        e.preventDefault()
+        let submitData = {
+            feedback_pk: feedbackElement.getAttribute('data-objectid'),
+            text: formObj.querySelector('input[name="changeInput"]').value,
+            csrfmiddlewaretoken: formObj.querySelector('input[type="hidden"]').value
+        }
+
+        $.ajax({
+            method: 'POST',
+            dataType: 'json',
+            data: submitData,
+            url: `{% url 'products:change_feedback' %}`,
+            success: function (data) {
+                formObj.remove()
+                feedbackText.style.display = 'block'
+                feedbackText.textContent = data['text']
+            },
+            error: function (data) {
+                console.log(data)
+                return;
+            }
+        })
+    }
+}
+
+if (document.getElementById('create-form')) {
+    setOnSubmitForCreateForm()
+}
+
+function setOnSubmitForCreateForm () {
+
+document.getElementById('create-form').onsubmit = function (e) {
+    e.preventDefault()
+    if (!e.target.feedbackInput.value) {
+        return
+    }
+
+    $.ajax({
+        method: 'POST',
+        dataType: 'json',
+        data: {
+            text: e.target.feedbackInput.value,
+            rating: document.querySelector('x-star-rating').value,
+            object_id: '{{ product.pk }}',
+            content_type: 'Product',
+            app_label: 'products',
+            csrfmiddlewaretoken: e.target.csrfmiddlewaretoken.value
+        },
+        url: '{% url 'products:create_feedback' %}',
+        success: function createSuccess (data) {
+
+            document.getElementById('feedback-block').insertAdjacentHTML(
+                'afterbegin',
+                `
+                <div
+                    class="feedback-element feedback-user-{{ request.user.username }}"
+                    data-objectid="${data['pk']}"
+                >
+                    <p class="username">{{ request.user.username }}</p>
+                    <p>${data['rating']}</p>
+                    <p class="feedback-text">${data['text']}</p>
+                    <button id="change-button" type="submit" onclick="changeFeedback()">Изменить</button>
+                </div>
+                `
+            )
+            e.remove()
+        }
+    })
+}
+}
+
+</script>
+
+</body>
+</html>

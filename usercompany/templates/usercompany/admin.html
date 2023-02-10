@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<h5>{{ company.username }}</h5>
+
+Group:
+{% for user in group.user_set.all %}
+    <p>name: {{ user.username }}</p>
+    <p>pass: {{ user.password }} email: {{ user.email }}</p>
+    {% if not user == request.user %}
+        <a href="{% url 'mainapp:update_user' slug=user.slug %}">Изменить</a>
+    {% endif %}
+{% endfor %}
+<a href="{% url 'products:create_product' %}">Создать продукт</a>
+
+</body>
+</html>

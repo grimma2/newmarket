@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div id="product-list">
+    {% for product in products %}
+        <a href="{% url 'products:product_detail' slug=product.slug %}">
+            <h5>{{ product.name }}</h5>
+            <img src="{{ product.photo.url }}" height="100" width="100">
+            <p><strong>{{ product.price }}</strong></p>
+        </a>
+    {% endfor %}
+</div>
+
+<div class="list-elements">
+    <div class="category-block">
+        {% for category in category_list %}
+            <input data-objectid="{{ category.2 }}" {{ category.0 }} type="checkbox" class="list-element category-elements">{{ category.1 }}
+        {% endfor %}
+    </div>
+    <div class="company-block">
+        {% for company in company_list %}
+            <input data-objectid="{{ company.2 }}" {{ company.0 }} type="checkbox" class="list-element company-elements">{{ company.1 }}
+        {% endfor %}
+    </div>
+    <div class="price-block">
+        <input type="number" class="price-input" id="from">
+        <input type="number" class="price-input" id="to">
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script>
+
+function setListParam (className) {
+    let names = document.querySelectorAll('input.list-element.' + className + ':checked')
+    if (!names) {
+        return ''
+    }
+    let query = ''
+
+    for (let i = 0, len = names.length; i < len; i++) {
+        if (names[i] === names[names.length - 1]) {
+            query = query + names[i].getAttribute('data-objectid')
+        } else {
+            query = query + names[i].getAttribute('data-objectid') + ','
+        }
+    }
+    return query
+}
+
+function sendQuery (query) {
+    $.ajax({
+        method: 'GET',
+        dataType: 'json',
+        data: query,
+        url: `{% url 'products:ajax_products' %}`,
+        success: function (data) {
+            let productBlock = document.getElementById('product-list')
+            productBlock.innerHTML = '';
+            let result = data['data']
+            for (let i = 0; i < result.length; i++) {
+                productBlock.insertAdjacentHTML(
+                    'beforeend',
+                    `
+                    <a href="http://localhost:8000/products/products/${result[i]['slug']}">
+                        <h5>${result[i]['name']}</h5>
+                        <img src="http://${window.location.host}/media/${result[i]['photo']}" height="100" width="100">
+                        <p><strong>${result[i]['price']}</strong></p>
+                    </a>
+                    `
+                )
+            }
+        }
+    })
+}
+
+let allListElements = document.getElementsByClassName('list-element')
+let priceInputs = document.getElementsByClassName('price-input')
+
+
+for (let i = 0, len = allListElements.length; i < len; i++) {
+    allListElements[i].addEventListener("click", function() {
+        sendQuerySet()
+    });
+}
+
+for (let i = 0, len = priceInputs.length; i < len; i++) {
+    priceInputs[i].onkeydown = function (e) {
+        if (e.keyCode === 13) {
+            sendQuerySet()
+        }
+    }
+}
+
+function sendQuerySet () {
+    let fromInput = document.getElementById('from')
+    let toInput = document.getElementById('to')
+
+    query = {
+        categories: setListParam('category-elements'),
+        companies: setListParam('company-elements'),
+        from: fromInput.value,
+        to: toInput.value
+    }
+
+    for (let key of Object.keys(query)) {
+        if (!query[key]) {
+            delete query[key]
+        }
+    }
+
+    sendQuery(query)
+}
+</script>
+
+</body>
+</html>

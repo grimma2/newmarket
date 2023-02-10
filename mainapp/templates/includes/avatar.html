@@ -1,0 +1,6 @@
+{% load static %}
+{% if user.avatar %}
+<img src="{% static 'mainapp/images/avatar.jpg' %}">
+{% else %}
+<img src="{{ user.avatar.url }}">
+{% endif %}

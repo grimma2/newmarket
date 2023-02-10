@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div class="chats">
+    {% for chat in chats %}
+        <div class="chat">
+            {% for user in chat.users.all %}
+                <a href="{% url 'mainapp:chat_detail' pk=chat.pk %}">
+                    {{ user.username }}
+                </a>
+            {% endfor %}
+        </div>
+    {% endfor %}
+</div>
+
+</body>
+</html>

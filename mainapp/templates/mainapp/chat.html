@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div id="messages">
+    {% for message in chat.message_set.all %}
+        <div class="message">
+            <p class="username">
+                {{ message.user.username }}
+            </p>
+            {% if request.user == message.user %}
+            <p class="message-right">
+            {% else %}
+            <p class="message-left">
+            {% endif %}
+                {{ message.text }}
+            </p>
+        </div>
+    {% endfor %}
+</div>
+
+<input type="text" id="message-input">
+
+<script>
+let username = '{{ request.user.username }}'
+let chatPk = {{ chat.pk }}
+
+const chatSocket = new WebSocket(
+    'ws://' + window.location.host + '/ws/socket-chat/' + chatPk + '/' + username + '/'
+)
+
+chatSocket.onmessage = function(e) {
+    let data = JSON.parse(e.data);
+    let message = data['message']
+    let messageUsername = data['username']
+
+    if ('{{ request.user.username }}' === messageUsername) {
+        document.getElementById('messages').insertAdjacentHTML('beforeend',
+            `
+                <div class='message'>
+                    <p class='username'>${messageUsername}</p>
+                    <p class='message-right'>${message}</p>
+                </div>
+            `
+        )
+    } else {
+        document.getElementById('messages').insertAdjacentHTML('beforeend',
+            `
+                <div class='message'>
+                    <p class='username'>${messageUsername}</p>
+                    <p class='message-left'>${message}</p>
+                </div>
+            `
+        )
+    }
+}
+
+document.getElementById('message-input').onkeydown = function(e) {
+    if (e.keyCode == 13) {
+        chatSocket.send(JSON.stringify({
+            'message': document.getElementById('message-input').value,
+            'username': '{{ request.user.username }}'
+        }));
+        document.getElementById('message-input').value = '';
+    }
+}
+
+</script>
+</body>
+</html>

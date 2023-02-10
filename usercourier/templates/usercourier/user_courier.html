@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <link rel="stylesheet" href="{% static 'mainapp/css/color.css' %}">
+</head>
+<body>
+
+{% if first_product %}
+<div id="courier-block">
+    <div id="product">
+        <p>{{ first_product.product.name }}</p>
+        <img src="{{ first_product.product.photo.url }}">
+        <p>{{ first_product.delivery_date }}</p>
+        <a href="{% url 'usercustomer:public_customer' first_product.user_customer.user.slug %}">Customer: {{ first_product.user_customer.user.username }}</a>
+        <a href="{% url 'mainapp:write_user' user=first_product.user_customer.user.pk %}">send message</a>
+        <button onclick="showChangeList()" id="changeBtn">Изменить</button>
+        <div id="changeList" style="display: none">
+            {% if first_product.status == 'status on wait' %}
+                <a href="
+                    {% url 'mainapp:change_status' product_id=first_product.pk option_index=0 %}
+                " class="selected">В ожидании</a>
+                <a href="
+                    {% url 'mainapp:change_status' product_id=first_product.pk option_index=1 %}
+                ">В пути</a>
+                <a href="
+                    {% url 'mainapp:change_status' product_id=first_product.pk option_index=2 %}
+                ">Доставлен</a>
+            {% elif first_product.status == 'status on way' %}
+                <a href="
+                    {% url 'mainapp:change_status' product_id=first_product.pk option_index=0 %}
+                ">В ожидании</a>
+                <a href="
+                    {% url 'mainapp:change_status' product_id=first_product.pk option_index=1 %}
+                " class="selected">В пути</a>
+                <a href="
+                    {% url 'mainapp:change_status' product_id=first_product.pk option_index=2 %}
+                ">Доставлен</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div id="productSelect">
+        {% for order_product in order_products %}
+            <a href="{% url 'usercourier:change_context_courier' order_product.pk %}">
+                {{ order_product.product.name }}
+            </a>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<p>You haven't products on order :(</p>
+{% endif %}
+
+{% if messages %}
+    <div id="messages-block">
+        {% for message in messages %}
+            <div class="alter alter-{{ message.tags }} m-2" id="msg" role="alert">
+                {{ message }}
+                <a href="{% url 'mainapp:change_status_accept' product_id=first_product.pk %}">Да</a>
+                <a onclick="showHideElement('messages-block')" href="#">Нет</a>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% for order_product in completed_products %}
+    {{ order_product.product.name }}
+    {{ order_product.delivery_date }}
+    <img src="{{ order_product.product.photo.url }}" height="50" width="50">
+    <p>for: {{ order_product.user_customer.user.username }}</p>
+{% endfor %}
+
+<script>
+
+function showChangeList () {
+    let btn = document.getElementById('changeBtn');
+
+    if (btn.textContent == 'Изменить') {
+        btn.textContent = 'Скрыть';
+        document.getElementById('changeList').style.display = 'block';
+    } else if (btn.textContent == 'Скрыть') {
+        btn.textContent = 'Изменить';
+        document.getElementById('changeList').style.display = 'none';
+    };
+};
+</script>
+
+<script src="{% static 'mainapp/js/show_hide.js' %}"></script>
+
+</body>
+</html>
