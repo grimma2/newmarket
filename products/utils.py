@@ -212,35 +212,35 @@ class SelectedList:
 
     @staticmethod
     def get_categories_list(query: ProductsQuery):
-        # Set default query data in `pk=-1` for if query list is empty we'll find nothing
-        data = Q(pk=-1)
-        for cat in query.categories:
-            data |= Q(pk=cat)
-
-        active_categories = Category.objects.filter(data)
+        # На бэкэнд сразу приходят только выбраные категории и
+        # парсятся в список картежем в переменную filter_active_categories
+        active_categories = Category.objects.filter(pk__in=query.categories)
         filter_active_categories = [
             (
                 'checked', category.name, category.pk
             )
             for category in active_categories
         ]
-        filter_unselect_categories = [
-            (
-                '',
-                category.name,
-                category.pk
-            ) for category in Category.objects.filter(level='level3')[:10] if not category in active_categories
-        ]
+        # если выбраных категорий меньше 10, то добавляем у прошлой переменной
+        # категории 3 уровня, которые в свою очередь НЕ выбранны
+        for third_level_category in Category.objects.filter(level='level3')[:10]:
+            if len(filter_active_categories) >= 10:
+                return filter_active_categories
 
-        return filter_active_categories + filter_unselect_categories
+            filter_active_categories.append(
+                (
+                    '',
+                    third_level_category.name,
+                    third_level_category.pk
+                )
+            )
 
     @staticmethod
     def get_companies_list(query: ProductsQuery) -> list:
-        data = Q(pk=-1)
-        for com in query.companies:
-            data |= Q(pk=com)
-
-        companies = UserCompany.objects.filter(data).select_related('user')
+        # переделать как в методе выше
+        companies = (
+            UserCompany.objects.filter(pk__in=query.companies).select_related('user')
+        )
         active_companies = [
             (
                 'checked', company.user.username, company.pk

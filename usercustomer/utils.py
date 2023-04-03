@@ -51,5 +51,5 @@ class RecommendedDependency:
     def target_categories(self):
         return Category.objects.filter(level='level2')[:50]
 
-    def targer_brands(self):
+    def target_brands(self):
         return UserCompany.objects.all()[:100]

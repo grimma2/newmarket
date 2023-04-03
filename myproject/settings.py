@@ -36,7 +36,7 @@ INSTALLED_APPS = [
 
 # setting variables for installed apps
 
-VUE_SRC_DIR = BASE_DIR / 'vuemarket' / 'src'
+VUE_SRC_DIR = BASE_DIR.parent / 'myproject-front' / 'src'
 
 ASGI_APPLICATION = 'myproject.asgi.application'
 

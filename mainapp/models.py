@@ -41,7 +41,7 @@ class UserCourier(models.Model):
 
 class UserCustomer(models.Model):
     user = models.ForeignKey(BaseUser, on_delete=models.CASCADE, null=True)
-    favorites = models.ForeignKey('products.Product', on_delete=models.PROTECT, null=True, blank=True)
+    favorites = models.ManyToManyField('products.Product', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return str(self.user.username)

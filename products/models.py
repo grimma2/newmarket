@@ -23,7 +23,7 @@ class Category(models.Model):
 
     name = models.CharField(max_length=255)
     level = models.CharField('Категория', max_length=6, choices=LEVEL_CHOICES, null=True)
-    categories = models.ManyToManyField('self', symmetrical=False, related_name='categories_up')
+    categories = models.ManyToManyField('self', symmetrical=False, related_name='categories_below', blank=True)
     slug = models.SlugField('URL', max_length=255, unique=True, null=True)
 
     def __str__(self):
@@ -39,7 +39,7 @@ class Product(models.Model):
     price = models.DecimalField('Цена', max_digits=10, decimal_places=2, default=0.00)
     photo = models.ImageField('Фото продукта', upload_to='product/photos/')
     description = models.TextField('Описание продукта')
-    parameters = models.JSONField(default=dict, blank=True, null=True) # dict of additional parameters creating be user
+    parameters = models.JSONField(default=dict, blank=True, null=True)  # dict of additional parameters creating by user
     rating = models.DecimalField('Оценка', max_digits=3, decimal_places=2, blank=True, null=True)
     slug = models.SlugField('URL', max_length=399, unique=True)
     feedback_set = GenericRelation('mainapp.Feedback')

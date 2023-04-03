@@ -27,7 +27,7 @@ from .utils import (
     FinalCreateMixin, del_errors, TransformForm, ParseNewForm, DFFMixin
 )
 
-
+# НЕ НУЖНО
 def map_paths(_path, view, name):
     if isinstance(view, types.FunctionType):
         view = view.view_class
@@ -85,17 +85,22 @@ class ProductCreateTest(DFFMixin):
     template_name = 'products/create_product.html'
 
 
-class ProductDetail(DetailView):
-    model = Product
-    template_name = 'products/product_detail.html'
+class GetProductDetail(View):
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['parameters'] = dict_to_list(self.object.parameters)
-        context['product_rate'] = self.object.feedback_set.aggregate(Avg('rating'))['rating__avg']
-        context.update(get_feedback_context(request=self.request, obj=self.object))
+    @staticmethod
+    def post(request):
+        product = Product.objects.get(slug=request.POST.slug)
+        product_rate = product.feedback_set.aggregate(Avg('rating'))['rating__avg']
 
-        return context
+        return {'product': ProductSerializer(product).data, 'product_rate': product_rate}
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context['parameters'] = dict_to_list(self.object.parameters)
+    #     context['product_rate'] = self.object.feedback_set.aggregate(Avg('rating'))['rating__avg']
+    #     context.update(get_feedback_context(request=self.request, obj=self.object))
+    #
+    #     return context
 
 
 class PutToCart(View):
@@ -134,12 +139,17 @@ def favorites(request):
     })
 
 
-def add_favorite(request):
-    request.user.get_specific_user().favorites.add(request.GET.dict()['product_id'])
-    return JsonResponse({})
+class AddProductToFavorites(APIView):
+
+    @staticmethod
+    def post(self, request):
+        product = Product.objects.get(slug=request.POST['slug'])
+        # добвление продукта в поле 'favorites'
+        request.user.get_specific_user().favorites.add(product)
+        return Response({})
 
 
-class CategoryProducts(SelectedList, SeveralQuerySetMixin, TemplateView):
+class GetSelectedProducts(SelectedList, SeveralQuerySetMixin, TemplateView):
     template_name = 'products/products.html'
 
     def get_context_data(self, **kwargs):

@@ -67,6 +67,6 @@ class BasePageCustomer(View):
             {
                 'products': recommended_dependency.target_products(),
                 'categories': recommended_dependency.target_categories(),
-                'companies': recommended_dependency.targer_brands()
+                'companies': recommended_dependency.target_brands()
             }
         )
